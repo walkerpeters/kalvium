@@ -1,0 +1,49 @@
+import json
+import operator
+import Flask
+
+
+def calculate(expression):
+    operators = {
+        "plus": operator.add,
+        "minus": operator.sub,
+        "into": operator.mul,
+        "div": operator.truediv,
+    }
+
+    numbers = expression.split("+")
+    for i in range(0, len(numbers) - 1):
+        numbers[i] = int(numbers[i])
+        numbers[i + 1] = int(numbers[i + 1])
+
+    result = operators[expression.split("+")[-1]](*numbers)
+
+    return result
+
+
+def history():
+    history_file = open("history.json", "r")
+    history = json.load(history_file)
+    history_file.close()
+
+    return history
+
+
+def get(path):
+    if path == "/history":
+        return history()
+    elif path.startswith("/"):
+        expression = path[1:]
+        result = calculate(expression)
+        return json.dumps({"question": expression, "answer": result})
+    else:
+        return "Invalid endpoint"
+
+
+
+    app = Flask(name)
+
+    app.add_url_rule("/", view=get)
+    app.add_url_rule("/history", view=history)
+
+    app.run(host="localhost", port=3000)
